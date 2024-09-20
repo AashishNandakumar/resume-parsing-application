@@ -1,0 +1,330 @@
+<!-- <!doctype html>
+<html>
+    <head>
+        <title>Resume Upload</title>
+    </head>
+    <body>
+        <h2>Upload Resume</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="file" accept=".pdf" required />
+            <button type="submit">Upload</button>
+        </form>
+        <div id="result"></div>
+        <div id="parseResult"></div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#uploadForm").submit(function (e) {
+                    e.preventDefault();
+                    let formData = new FormData(this);
+                    $.ajax({
+                        url: '{% url "resume-upload" %}',
+                        type: "POST",
+                        data: formData,
+                        success: function (data) {
+                            $("#result").html(
+                                "Resume uploaded successfully! Parsing in Progress...",
+                            );
+                            checkParseStatus(data.id);
+                        },
+                        error: function (error) {
+                            $("#result").html("Error uploading resume.");
+                            console.log(error);
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    });
+                });
+
+                function checkParseStatus(resume_id) {
+                    $.ajax({
+                        url: '{% url "resume-detail" 0 %}'.replace(
+                            "0",
+                            resume_id,
+                        ),
+                        type: "GET",
+                        success: function (data) {
+                            if (data.parsed) {
+                                displayParseResult(data);
+                            } else {
+                                setTimeout(function () {
+                                    console.log("trying");
+                                    checkParseStatus(resume_id);
+                                }, 2000); // polling mechanism for every 2 seconds
+                            }
+                        },
+                        error: function (error) {
+                            $("$parseResumt").html(
+                                "Error checking parse status",
+                            );
+                            console.log(error);
+                        },
+                    });
+                }
+
+                function displayParseResult(data) {
+                    let result =
+                        "<h3>Parsed Resume Data:</h3>" +
+                        "<p>Name: " +
+                        data.name +
+                        "</p>" +
+                        "<p>Email: " +
+                        data.email +
+                        "</p>" +
+                        "<p>Phone: " +
+                        data.phone_number +
+                        "</p>" +
+                        "<p>Education: " +
+                        data.education +
+                        "</p>" +
+                        "<p>Work Experience: " +
+                        data.work_experience +
+                        "</p>" +
+                        "<p>Technologies: " +
+                        data.technologies +
+                        "</p>";
+
+                    $("#parseResult").html(result);
+                }
+            });
+        </script>
+    </body>
+</html> -->
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Professional Resume Parser</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <style>
+            .loader {
+                border-top-color: #4f46e5;
+                -webkit-animation: spinner 1.5s linear infinite;
+                animation: spinner 1.5s linear infinite;
+            }
+            @-webkit-keyframes spinner {
+                0% {
+                    -webkit-transform: rotate(0deg);
+                }
+                100% {
+                    -webkit-transform: rotate(360deg);
+                }
+            }
+            @keyframes spinner {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100 min-h-screen">
+        <div class="container mx-auto px-4 py-8">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                    Professional Resume Parser
+                </h1>
+                <p class="text-xl text-gray-600">
+                    Upload a resume to extract key information
+                </p>
+            </header>
+
+            <div
+                class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden"
+            >
+                <div class="p-6">
+                    <form id="uploadForm" class="space-y-4">
+                        {% csrf_token %}
+                        <div class="flex items-center justify-center w-full">
+                            <label
+                                for="fileInput"
+                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                            >
+                                <div
+                                    class="flex flex-col items-center justify-center pt-5 pb-6"
+                                >
+                                    <svg
+                                        class="w-10 h-10 mb-3 text-gray-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        ></path>
+                                    </svg>
+                                    <p class="mb-2 text-sm text-gray-500">
+                                        <span class="font-semibold"
+                                            >Click to upload</span
+                                        >
+                                        or drag and drop
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        PDF (MAX. 10MB)
+                                    </p>
+                                </div>
+                                <input
+                                    id="fileInput"
+                                    type="file"
+                                    name="file"
+                                    accept=".pdf"
+                                    class="hidden"
+                                    required
+                                />
+                            </label>
+                        </div>
+                        <div
+                            id="fileName"
+                            class="text-sm text-gray-500 text-center"
+                        ></div>
+                        <button
+                            type="submit"
+                            class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                        >
+                            Parse Resume
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div
+                id="result"
+                class="mt-8 text-center text-lg font-semibold text-gray-700"
+            ></div>
+
+            <div
+                id="loader"
+                class="hidden mt-8 flex justify-center items-center"
+            >
+                <div
+                    class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"
+                ></div>
+            </div>
+
+            <div
+                id="parseResult"
+                class="mt-8 bg-white rounded-lg shadow-md overflow-hidden hidden"
+            >
+                <div class="p-6 space-y-4">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">
+                        Parsed Resume Data
+                    </h3>
+                    <div id="parsedData" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                $("#fileInput").change(function () {
+                    const fileName = $(this).val().split("\\").pop();
+                    $("#fileName").text(fileName);
+                });
+
+                $("#uploadForm").submit(function (e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+
+                    $("#result").html("");
+                    $("#parseResult").addClass("hidden");
+                    $("#loader").removeClass("hidden");
+
+                    $.ajax({
+                        url: '{% url "resume-upload" %}',
+                        type: "POST",
+                        data: formData,
+                        success: function (data) {
+                            $("#result").html(
+                                "Resume uploaded successfully! Parsing in progress...",
+                            );
+                            checkParseStatus(data.id);
+                        },
+                        error: function (error) {
+                            $("#loader").addClass("hidden");
+                            $("#result").html(
+                                "Error uploading resume. Please try again.",
+                            );
+                            console.log(error);
+                        },
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                    });
+                });
+
+                function checkParseStatus(resumeId) {
+                    $.ajax({
+                        url: '{% url "resume-detail" 0 %}'.replace(
+                            "0",
+                            resumeId,
+                        ),
+                        type: "GET",
+                        success: function (data) {
+                            if (data.parsed) {
+                                $("#loader").addClass("hidden");
+                                displayParseResult(data);
+                            } else {
+                                setTimeout(function () {
+                                    checkParseStatus(resumeId);
+                                }, 2000);
+                            }
+                        },
+                        error: function (error) {
+                            $("#loader").addClass("hidden");
+                            $("#result").html(
+                                "Error checking parse status. Please try again.",
+                            );
+                            console.log(error);
+                        },
+                    });
+                }
+
+                function displayParseResult(data) {
+                    const fields = [
+                        { key: "name", label: "Name" },
+                        { key: "email", label: "Email" },
+                        { key: "phone_number", label: "Phone" },
+                        { key: "education", label: "Education" },
+                        { key: "work_experience", label: "Work Experience" },
+                        { key: "technologies", label: "Technologies" },
+                        { key: "college", label: "College" },
+                        { key: "designation", label: "Designation" },
+                        {
+                            key: "total_experience",
+                            label: "Total Experience (yrs)",
+                        },
+                    ];
+
+                    let resultHtml = "";
+                    fields.forEach((field) => {
+                        resultHtml += `
+                        <div class="bg-gray-50 px-4 py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg">
+                            <dt class="text-sm font-medium text-gray-500">${field.label}</dt>
+                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${data[field.key] || "N/A"}</dd>
+                        </div>
+                    `;
+                    });
+
+                    $("#parsedData").html(resultHtml);
+                    $("#parseResult").removeClass("hidden");
+                    $("#result").html("");
+                }
+            });
+        </script>
+    </body>
+</html>
