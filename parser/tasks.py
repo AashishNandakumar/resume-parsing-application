@@ -59,7 +59,7 @@ def parse_resume(resume_id):
         # resume.phone_number = data.get("mobile_number", "")
         # resume.technologies = ", ".join(data.get("skills", []))
 
-        # # TODO: enhanced education parsing
+        # TODO: enhanced education parsing
         # education = data.get("degree", [])
         # education_info = []
         # pattern = r"(.+?)\s*(\d{4}\s*-\s*\d{4}|\d{4})"
