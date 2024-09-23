@@ -104,10 +104,8 @@ def extract_phone(text) -> str:
     matches = re.findall(combined_pattern, text)
 
     if matches:
-        # print(f"possible matches: {matches}")
         # clean and standardize the first match
         phone = re.sub(r"\D", "", matches[0])  # remove non-digit characters
-        # print(f"phone number: {phone}")
         # basic validation (at least 10 digits, not more than 15 digits)
         if 10 <= len(phone) <= 15:
             # format the phone number
@@ -221,7 +219,7 @@ def extract_education(text):
     if current_education:
         education_data.append(current_education)
 
-    print(f"logging education of the candidate: {education_data}")
+    # print(f"logging education of the candidate: {education_data}")
     return education_data
 
 
@@ -290,11 +288,8 @@ def extract_work_experience(text):
             }
         )
 
-    print(f"logging experiences of the candidate: {experiences}")
+    # print(f"logging experiences of the candidate: {experiences}")
     return experiences
-
-
-import re
 
 
 def extract_skills(text):
@@ -373,16 +368,13 @@ def extract_skills(text):
     skills_list = sorted(list(skills))
     skills_string = ", ".join(skills_list)
 
-    print(f"logging education of the candidate: {skills_string}")
+    print(f"logging skills of the candidate: {skills_string}")
     return skills_string
 
 
 def parse_resume_util(file_path):
     text = extract_text_from_pdf(file_path)
-    print(f"pdf text: {text}")
-
     doc = nlp(text)
-    # print(doc)
 
     name = extract_name(doc)
     phone = extract_phone(text)
