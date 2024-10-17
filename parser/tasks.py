@@ -11,6 +11,7 @@ from pandas.core.arrays.arrow.array import Any
 from pyresparser import ResumeParser
 from .utils import parse_resume_util
 from .models import Resume
+from .llm import parse_resume_llm
 from django.shortcuts import get_object_or_404
 import re
 from datetime import datetime
@@ -53,14 +54,27 @@ def parse_resume(resume_id):
         # resume.save()
 
         """Approach - 2: custom parsing logic using spaCy (not 100% accurate over various resume formats)"""
-        data = parse_resume_util(file_path)
+        # data = parse_resume_util(file_path)
 
+        # resume.name = data.get("name")
+        # resume.email = data.get("email")
+        # resume.phone_number = data.get("phone")
+        # resume.education = data.get("education")
+        # resume.work_experience = data.get("work_experience")
+        # resume.technologies = data.get("technologies")
+        # resume.parsed = True
+        # resume.save()
+        # print(f"Resume {resume_id} successfully parsed and saved")
+
+        """Approach - 3: Using LLMs for accurate parsing"""
+        data = parse_resume_llm(file_path)
+        print("data from LLM: ", data, type(data))
         resume.name = data.get("name")
         resume.email = data.get("email")
         resume.phone_number = data.get("phone")
         resume.education = data.get("education")
         resume.work_experience = data.get("work_experience")
-        resume.technologies = data.get("technologies")
+        resume.technologies = data.get("skills")
         resume.parsed = True
         resume.save()
         print(f"Resume {resume_id} successfully parsed and saved")

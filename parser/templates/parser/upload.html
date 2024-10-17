@@ -345,8 +345,9 @@
                     });
                 }
 
-                // Display parsed results
                 function displayParseResult(data) {
+                    console.log("Received data:", data);
+
                     const fields = [
                         { key: "name", label: "Name", icon: "user" },
                         { key: "email", label: "Email", icon: "mail" },
@@ -369,83 +370,84 @@
                     ];
 
                     let resultHtml = "";
+
                     fields.forEach((field) => {
                         let fieldContent = "";
-                        if (field.key === "education") {
-                            fieldContent = formatEducation(
-                                JSON.parse(data[field.key]),
+
+                        try {
+                            if (
+                                field.key === "education" ||
+                                field.key === "work_experience" ||
+                                field.key === "technologies"
+                            ) {
+                                const parsedData = JSON.parse(
+                                    data[field.key].replace(/'/g, '"'),
+                                );
+                                if (field.key === "education") {
+                                    fieldContent = formatEducation(parsedData);
+                                } else if (field.key === "work_experience") {
+                                    fieldContent =
+                                        formatWorkExperience(parsedData);
+                                } else {
+                                    fieldContent = parsedData.join(", ");
+                                }
+                            } else {
+                                fieldContent = data[field.key] || "N/A";
+                            }
+                        } catch (error) {
+                            console.error(
+                                `Error processing ${field.key}:`,
+                                error,
                             );
-                        } else if (field.key === "work_experience") {
-                            fieldContent = formatWorkExperience(
-                                JSON.parse(data[field.key].replace(/'/g, '"')),
-                            );
-                            // } else if (field.key === "technologies") {
-                            //     fieldContent = formatTechnologies(
-                            //         JSON.parse(data[field.key]),
-                            //     );
-                        } else {
-                            fieldContent = data[field.key] || "N/A";
+                            fieldContent = "Error processing data";
                         }
 
                         resultHtml += `
-                        <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg">
-                            <dt class="text-sm font-medium text-gray-500 flex items-center">
-                                <svg class="h-5 w-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${getIconPath(field.icon)}"></path>
-                                </svg>
-                                ${field.label}
-                            </dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${fieldContent}</dd>
-                        </div>
-                    `;
+                            <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-lg">
+                                <dt class="text-sm font-medium text-gray-500 flex items-center">
+                                    <svg class="h-5 w-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${getIconPath(field.icon)}"></path>
+                                    </svg>
+                                    ${field.label}
+                                </dt>
+                                <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">${fieldContent}</dd>
+                            </div>
+                        `;
                     });
 
                     $("#parsedData").html(resultHtml);
                     $("#parseResult").removeClass("hidden");
                 }
 
-                // Format education data
                 function formatEducation(educationData) {
+                    if (!educationData) return "No education data available";
                     return educationData
                         .map(
-                            (edu) => `
-                    <div class="mb-2">
-                        <p class="font-semibold">${edu.degree}</p>
-                        <p>${edu.institution}</p>
-                        <p class="text-sm text-gray-600">${edu.timeframe}</p>
-                    </div>
-                `,
+                            (edu) =>
+                                `<div class="mb-2">
+                            <strong>${edu.degree || "Degree not specified"}</strong><br>
+                            ${edu.institution || "Institution not specified"}${edu.location ? `, ${edu.location}` : ""}<br>
+                            ${edu.timeframe || "Timeframe not specified"}
+                        </div>`,
                         )
                         .join("");
                 }
 
-                // Format work experience data
-                function formatWorkExperience(experienceData) {
-                    return experienceData
+                function formatWorkExperience(workData) {
+                    if (!workData) return "No work experience data available";
+                    return workData
                         .map(
-                            (exp) => `
-                    <div class="mb-2">
-                        <p class="font-semibold">${exp.designation}</p>
-                        <p>${exp.organization_name}</p>
-                        <p class="text-sm text-gray-600">${exp.timeframe}</p>
-                    </div>
-                `,
+                            (work) =>
+                                `<div class="mb-2">
+                            <strong>${work.role || "Role not specified"}</strong><br>
+                            ${work.organization || "Organization not specified"}<br>
+                            ${work.timeframe || "Timeframe not specified"}
+                        </div>`,
                         )
                         .join("");
                 }
 
-                // Format technologies data
-                function formatTechnologies(technologiesData) {
-                    return technologiesData
-                        .map(
-                            (tech) => `
-                    <span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-semibold mr-2 mb-2 px-2.5 py-0.5 rounded">
-                        ${tech}
-                    </span>
-                `,
-                        )
-                        .join("");
-                }
+                // Assuming getIconPath function remains the same
 
                 // Get icon path for different fields
                 function getIconPath(icon) {
